@@ -10,9 +10,7 @@ import { BootOptions } from './interfaces/boot-options.interface';
 export class BootFileLoader {
     private readonly files: string[];
 
-    constructor(
-        @Inject(BOOT_OPTIONS_PROVIDER) private readonly options: BootOptions,
-    ) {
+    constructor(@Inject(BOOT_OPTIONS_PROVIDER) private readonly options: BootOptions) {
         this.files = this.getFilesPath();
     }
 
@@ -72,10 +70,7 @@ export class BootFileLoader {
                 path.resolve(dirname, `${tokens[1]}.${env}.${tokens[0]}`),
             );
         } else {
-            filenames.push(
-                path.resolve(dirname, filename),
-                path.resolve(dirname, `${filename}.${env}`),
-            );
+            filenames.push(path.resolve(dirname, filename), path.resolve(dirname, `${filename}.${env}`));
         }
 
         return filenames;

@@ -77,13 +77,13 @@ export class Proxy implements IProxy, OnModuleInit {
                 ignorePath: true,
             }),
         );
-        this.proxy.on('error', (err: Error, req: Request, res: Response) => {
+        this.proxy.on('error', (err, req: Request, res) => {
             const filters = this.filterRegistry.getRouteFilters(get(req.proxy, 'id'));
             for (let i = 0; i < filters.length; i++) {
                 const [routeFilter, filter] = filters[i];
                 if (filter.error) {
                     req.proxy.parameters = routeFilter.parameters;
-                    filter.error(err as ProxyErrorException, req, res);
+                    filter.error(err as ProxyErrorException, req, res as Response);
                 }
             }
         });

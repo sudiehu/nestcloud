@@ -86,7 +86,7 @@ export class Loadbalance implements ILoadbalance, OnModuleInit {
             const ruleName = this.config.getRule(service);
             let rule: Rule = this.loadbalanceRuleRegistry.getRule(ruleName);
             if (!rule) {
-                await new Promise((resolve, reject) => {
+                await new Promise<void>((resolve, reject) => {
                     this.loadbalanceRuleRegistry.watch(() => {
                         rule = this.loadbalanceRuleRegistry.getRule(ruleName);
                         if (rule) {

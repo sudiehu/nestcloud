@@ -34,6 +34,8 @@ export class ConsulService implements OnModuleInit, OnModuleDestroy, IService {
     private readonly status: string;
     private readonly includes: string[];
     private readonly connect: ConnectService;
+    private readonly grpc: string;
+    private readonly grpcUseTLS: boolean;
 
     constructor(private readonly consul: IConsul, options: ServiceOptions) {
         this.discoveryHost = get(options, 'discoveryHost', getIPAddress());
@@ -59,6 +61,8 @@ export class ConsulService implements OnModuleInit, OnModuleDestroy, IService {
         this.status = get(options, 'healthCheck.status');
         this.includes = get(options, 'service.includes', []);
         this.store = new ServiceStore(this.consul, this.includes);
+        this.grpc = get(options, 'healthCheck.grpc');
+        this.grpcUseTLS = get(options, 'healthCheck.grpcUseTLS', true);
     }
 
     async init() {
@@ -113,8 +117,13 @@ export class ConsulService implements OnModuleInit, OnModuleDestroy, IService {
             status: this.status,
         } as ServiceCheck;
 
-        if (this.tcp) {
-            check.tcp = this.tcp === 'true' ? `${this.discoveryHost}:${this.servicePort}` : this.tcp;
+        const target = `${this.discoveryHost}:${this.servicePort}`;
+
+        if (this.grpc) {
+            check.grpc = target;
+            check.grpcUseTls = this.grpcUseTLS === true;
+        } else if (this.tcp) {
+            check.tcp = this.tcp === 'true' ? target : this.tcp;
         } else if (this.script) {
             check.script = this.script;
         } else if (this.dockerContainerId) {
@@ -127,7 +136,7 @@ export class ConsulService implements OnModuleInit, OnModuleDestroy, IService {
         }
 
         return {
-            id: this.serviceId || md5encode(`${this.discoveryHost}:${this.servicePort}`),
+            id: this.serviceId || md5encode(target),
             name: this.serviceName,
             address: this.discoveryHost,
             port: parseInt(this.servicePort + ''),

@@ -55,7 +55,8 @@ export class ConsulConfig implements IConfig, OnModuleInit {
         try {
             await this.consul.kv.set(this.name, yamlString);
         } catch (e) {
-            throw new ConfigSyncException(e.message, e.stack);
+            const error = e as Error
+            throw new ConfigSyncException(error.message, error.stack);
         }
     }
 

@@ -8,7 +8,7 @@ import uriParams = require('uri-params');
 import { Scanner, ILoadbalance, LOADBALANCE, BRAKES } from '@nestcloud/common';
 import { HttpClient } from './http.client';
 import { Interceptor } from './interfaces/interceptor.interface';
-import { Brakes } from '@nestcloud/brakes';
+import { Brakes, Fallback } from '@nestcloud/brakes';
 
 interface DecoratorRequest {
     instance: Function;
@@ -79,7 +79,7 @@ export class HttpOrchestrator {
                 }
             });
 
-            const fallback = this.scanner.findInjectable(FallbackRef);
+            const fallback: Fallback = this.scanner.findInjectable(FallbackRef);
             const http = this.http.create({ service: serviceName });
             http.useLb(lb);
             http.useInterceptors(...interceptors);

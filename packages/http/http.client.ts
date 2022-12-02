@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { ILoadbalance } from '@nestcloud/common';
 import { Interceptor } from './interfaces/interceptor.interface';
-import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios from 'axios';
 import * as LbModule from '@nestcloud/loadbalance';
 import { HttpOptions } from './interfaces/http-options.interface';
@@ -30,10 +30,7 @@ export class HttpClient {
     }
 
     create(options: HttpOptions = {}) {
-        return new HttpClient(
-            axios.create({ ...options }),
-            options,
-        );
+        return new HttpClient(axios.create({ ...options } as AxiosRequestConfig), options);
     }
 
     useLb(lb: ILoadbalance) {
@@ -90,7 +87,7 @@ export class HttpClient {
             try {
                 return await this.doRequest(options);
             } catch (error) {
-                e = error;
+                e = error as HttpException;
                 if (error instanceof HttpException) {
                     return;
                 }
@@ -147,13 +144,14 @@ export class HttpClient {
         try {
             return await this.http.request(config);
         } catch (e) {
-            if (e.response) {
-                throw new HttpException(e.response.data, e.response.status);
+            const error = e as AxiosError;
+            if (error.response) {
+                throw new HttpException(error.response.data, error.response.status);
             }
-            if (e.request) {
-                throw new HttpException(e.message, 400);
+            if (error.request) {
+                throw new HttpException(error.message, 400);
             }
-            throw new ServiceUnavailableException(e.message);
+            throw new ServiceUnavailableException(error.message);
         }
     }
 }

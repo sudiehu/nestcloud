@@ -1,5 +1,5 @@
-import { get } from 'lodash';
 import { IService, IServiceServer, IEtcd, sleep } from '@nestcloud/common';
+import { get } from 'lodash';
 import { ServiceOptions } from './interfaces/service-options.interface';
 import { Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import * as YAML from 'yamljs';
@@ -21,6 +21,8 @@ export class EtcdService implements IService, OnModuleInit, OnModuleDestroy {
     private watcher: Watcher;
     private timer: NodeJS.Timeout;
 
+    private readonly ttl: number;
+
     constructor(
         private readonly client: IEtcd,
         private readonly options: ServiceOptions,
@@ -33,6 +35,7 @@ export class EtcdService implements IService, OnModuleInit, OnModuleDestroy {
             serviceNode.name = this.options.name;
         }
         this.self = serviceNode;
+
     }
 
     public async init() {
@@ -79,10 +82,10 @@ export class EtcdService implements IService, OnModuleInit, OnModuleDestroy {
 
     private async registerService() {
         const key = `service__${this.self.name}__${this.self.address}__${this.self.port}`;
-        const ttl = get(this.options, 'healthCheck.ttl', 20);
+        const ttl = get(this.options, 'healthCheck.ttl');
         while (true) {
             try {
-                const lease = this.client.namespace(this.namespace).lease(ttl);
+                const lease = this.client.namespace(this.namespace).lease(parseInt(ttl));
                 await lease.put(key).value(YAML.stringify(this.self));
                 lease.on('lost', async () => {
                     lease.removeAllListeners('lost');

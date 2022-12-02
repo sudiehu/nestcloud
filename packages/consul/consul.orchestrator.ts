@@ -33,7 +33,7 @@ export class ConsulOrchestrator implements OnApplicationShutdown {
     }
 
     onApplicationShutdown(signal?: string): any {
-        this.keyValues.forEach(item => item.watcher ? item.watcher.end() : '');
+        this.keyValues.forEach(item => (item.watcher ? item.watcher.end() : ''));
     }
 
     public async mountKeyValues() {

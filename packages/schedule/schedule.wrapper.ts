@@ -15,7 +15,7 @@ export class ScheduleWrapper {
         let timer: NodeJS.Timeout;
 
         const targetRef = () => {
-            return new Promise(async (resolve, reject) => {
+            return new Promise<void>(async (resolve, reject) => {
                 const wrapperRef = async () => {
                     try {
                         await (await target).call(null);

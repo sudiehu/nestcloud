@@ -58,7 +58,8 @@ export class EtcdConfig implements IConfig, OnModuleInit {
         try {
             await this.client.namespace(this.namespace).put(this.name).value(yamlString);
         } catch (e) {
-            throw new ConfigSyncException(e.message, e.stack);
+            const error = e as Error
+            throw new ConfigSyncException(error.message, error.stack);
         }
     }
 
